@@ -1,0 +1,20 @@
+{
+    "name": "webites/webfleet-php-client",
+    "description": "PHP CLient for Webfleet",
+    "type": "library",
+    "require": {
+        "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Webites\\WebfleetPhpClient\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "webites",
+            "email": "lgolabek@outlook.com"
+        }
+    ]
+}
