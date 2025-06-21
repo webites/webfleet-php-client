@@ -2,6 +2,7 @@
 
 namespace Webites\WebfleetPhpClient\Request;
 
+use Psr\Log\LoggerInterface;
 use Webites\WebfleetPhpClient\Client\Client;
 
 abstract class AbstractRequest
@@ -14,12 +15,17 @@ abstract class AbstractRequest
     protected const ENDPOINT = '';
     protected const METHOD = 'GET';
     protected const ACTION = '';
+
+    protected LoggerInterface $logger;
+
     public function __construct(
         Client $client,
-        array $queryParams = []
+        array $queryParams = [],
+        ?LoggerInterface $logger = null
     ) {
         $this->client = $client;
         $this->queryParams = $queryParams;
+        $this->logger = $logger;
 
         if (empty($this->client->getToken())) {
             throw new \RuntimeException('API token is not set. Please provide a valid token.');
@@ -38,6 +44,9 @@ abstract class AbstractRequest
         $this->queryParams['action'] = $this::ACTION;
         $this->queryParams['lang'] = $this->client->getLang();
         $this->queryParams['account'] = $this->client->getAccount();
+        if (!isset($this->queryParams['outputformat'])) {
+            $this->queryParams['outputformat'] = 'json';
+        }
 
         $queryString = http_build_query($this->queryParams);
 
@@ -54,4 +63,19 @@ abstract class AbstractRequest
     }
 
     abstract public function handle(): mixed;
+
+    protected function logError(
+        \Throwable $exception,
+    ) : void {
+        if ($this->logger) {
+            $this->logger->error(
+                'An error occurred in request: ' . $exception->getMessage(),
+                [
+                    'exception' => $exception,
+                    'request_url' => $this->fullUrl,
+                    'query_params' => $this->queryParams,
+                ]
+            );
+        }
+    }
 }
